@@ -1,0 +1,99 @@
+version: "v0.4"
+project:
+  name: "Improved last-iterate bounds for SGD with and without replacement"
+  description: >-
+    For a finite family of differentiable convex beta-smooth losses with a population
+    minimizer, this formalization proves an expected last-iterate population-loss bound
+    for stochastic gradient descent under uniform sampling with replacement and uniform
+    sampling without replacement. With delta = min(1, 2 - eta beta), the bound is
+    280000 times log(T+2)^3 / log(2+log(T+2)) times
+    [R^2 / (delta^3 eta T) + eta sigma_star^2 / delta^4]. It holds for all
+    0 < eta beta < 2, every positive WR horizon, and every WOR horizon through one full
+    pass, including T = n. Under interpolation at eta = 1/beta, this yields
+    O(beta R^2 log(T)^3 / (T log log(T))). The two compared theorems use the actual
+    finite sampling averages and the usual SGD recursion. All history estimates and
+    stochastic sampling identities are proved from the stated assumptions.
+  authors:
+    - "Yimin Zhong"
+  responsible_maintainers:
+    - "Yimin Zhong"
+  license: "Apache-2.0"
+classification:
+  arxiv: ["stat.ML", "cs.LG"]
+  msc2020: ["90C15", "90C25", "68T05"]
+sources:
+  - title: "Improved last-iterate bounds for SGD with and without replacement"
+    authors: ["Yimin Zhong", "Jiaxin Zhou"]
+    type: "arxiv preprint"
+    relationship: "formalizes"
+    note: >-
+      Theorem 2.1 and the loss conclusion of Corollary 2.2 in [arxiv:2611.14811].
+status:
+  scope: >-
+    Both WR and one-pass WOR noisy last-iterate population-loss bounds, and their
+    greedy-step interpolation loss specialization, are proved under the original
+    finite-dimensional smooth convex assumptions. The statements include T = n for WOR
+    and an explicit universal constant 280000. The separate population-gradient
+    conclusion, tuned-step corollaries, and quadratic special cases are not submission
+    claims. No pathwise history estimate is assumed in either final theorem.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: ["propext", "Classical.choice", "Quot.sound"]
+  main_results:
+    - declaration: "SGDLastIterate.noisy_wr_wor"
+      file: "Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator.json"
+      literature_dependencies: []
+    - declaration: "SGDLastIterate.interpolation_wr_wor"
+      file: "Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator.json"
+      literature_dependencies: []
+automation:
+  methods:
+    - method: "manual"
+      tool_setup: "Human mathematical development and direction through research discussions."
+    - method: "agent"
+      framework: "OpenAI Codex"
+      tool_setup: >-
+        AI-assisted proof decomposition, Lean implementation, finite sampling-law
+        construction, compilation, axiom audits, and preparation of the independent
+        Challenge and Solution. Mathlib tactics are used in the proof development.
+  notes: >-
+    The user supplied and directed the mathematical research and requested the Lean
+    formalization. Codex produced and checked the Lean proofs and submission packaging.
+fidelity:
+  divergences: >-
+    The formalization proves the requested loss estimates with a conservative explicit
+    constant 280000. It reorganizes restarted trajectories in one finite history Hilbert
+    space and uses actual coordinate-permutation bijections, rather than following each
+    line of the manuscript. The rate, original assumptions, step-size range, and sampling
+    horizons are preserved. It is not a formalization of every statement in the manuscript.
+review:
+  status: "agent-reviewed"
+  notes: >-
+    The theorem statements were compared with the supplied manuscript and the original
+    SGD model, including the noise normalization and full-pass WOR endpoint. Compilation
+    and 237 proved declarations were audited locally. The Lean 4.35.0-rc2 build passed.
+    Comparator accepted both statements and replayed the exported proofs with Lean and
+    NanoDa in its documented unsandboxed local mode. This host denies the user namespace
+    needed by bubblewrap, so Palomar's sandboxed verification remains a separate required
+    check. No independent human peer review or Palomar registration is claimed. The Challenge has concrete definition bodies and only two
+    deliberate theorem proof holes; those are excluded from status.sorry_count.
+alignment:
+  namespace: "SGDLastIterate"
+  statements:
+    - source: "Theorem 2.1"
+      lean: "SGDLastIterate.noisy_wr_wor"
+      module: "Solution"
+      status: "proved"
+      note: "Full noisy loss bound with explicit universal constant and both sampling laws."
+    - source: "Corollary 2.2, loss conclusion"
+      lean: "SGDLastIterate.interpolation_wr_wor"
+      module: "Solution"
+      status: "proved"
+      note: "Zero-noise specialization at eta = 1/beta; population-gradient bound omitted."
+acknowledgements: "Built on Lean and Mathlib; AI assistance is disclosed under automation."
