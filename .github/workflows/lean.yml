@@ -1,0 +1,82 @@
+name: Lean verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build, audit axioms, and replay proofs
+    # 22.04 permits the user namespaces needed by Comparator's sandbox.
+    runs-on: ubuntu-22.04
+    # A cold build compiles Mathlib from source; later runs reuse .lake.
+    timeout-minutes: 180
+    env:
+      MATHLIB_NO_CACHE_ON_UPDATE: "1"
+      LEAN_NUM_THREADS: "2"
+      LAKE_CACHE_DIR: ${{ github.workspace }}/.lake/artifact-cache
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Install the sandbox dependency
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y bubblewrap
+
+      - name: Build with the pinned Lean toolchain
+        uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1
+        with:
+          auto-config: "false"
+          build: "true"
+          test: "false"
+          lint: "false"
+          use-mathlib-cache: "false"
+          use-github-cache: "true"
+
+      - name: Audit the proof library and submission axioms
+        shell: bash
+        run: |
+          mkdir -p .lake/ci
+          cat > .lake/ci/AxiomAudit.lean <<'LEAN'
+          module
+          import Solution
+          import Lean.Util.CollectAxioms
+
+          open Lean Elab Command in
+          run_cmd do
+            let env ← getEnv
+            let allowed := #[``propext, ``Classical.choice, ``Quot.sound]
+            let mut checked : Nat := 0
+            for (name, _) in env.constants.toList do
+              if (`LastIterate).isPrefixOf name || (`SGDLastIterate).isPrefixOf name then
+                for axiomName in ← collectAxioms name do
+                  unless allowed.contains axiomName do
+                    throwError "{name} uses forbidden axiom {axiomName}"
+                checked := checked + 1
+            for name in #[``SGDLastIterate.noisy_wr_wor,
+                ``SGDLastIterate.interpolation_wr_wor] do
+              unless env.contains name do
+                throwError "Missing submission theorem {name}"
+            if checked == 0 then
+              throwError "No project declarations were audited"
+            logInfo m!"Axiom audit passed for {checked} project declarations."
+          LEAN
+          lake env lean .lake/ci/AxiomAudit.lean
+
+      - name: Compare statements and replay with Lean and NanoDa
+        shell: bash
+        run: |
+          export PATH="$(lean --print-prefix)/bin:$PATH"
+          lake comparator --config=comparator.json

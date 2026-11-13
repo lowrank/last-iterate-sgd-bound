@@ -9,50 +9,50 @@ The main statements are in [Challenge.lean](Challenge.lean), and their proofs ar
 
 ## Mathematical result
 
-Let $f_1,\ldots,f_n:\mathbb R^d\to\mathbb R$ be differentiable convex functions whose gradients
+Let $f_1,\ldots,f_n:\mathbb{R}^{d}\to\mathbb{R}$ be differentiable convex functions whose gradients
 are $\beta$-Lipschitz, where $n\ge 1$ and $\beta>0$. Suppose the population objective
 
-$$
-F(x)=\frac1n\sum_{z=1}^n f_z(x)
-$$
+```math
+F(x)=\frac{1}{n}\sum_{z=1}^{n} f_z(x)
+```
 
-has a minimizer $x^*$. Starting from a deterministic $x_0$, run SGD with constant step size
+has a minimizer $x^{\ast}$. Starting from a deterministic $x_0$, run SGD with constant step size
 $\eta>0$:
 
-$$
+```math
 x_{t+1}=x_t-\eta\nabla f_{z_t}(x_t).
-$$
+```
 
 Write
 
-$$
-R^2=\lVert x_0-x^*\rVert^2,
+```math
+R^{2}=\lVert x_0-x^{\ast}\rVert^{2},
 \qquad
-\sigma_*^2=\frac1n\sum_{z=1}^n\lVert\nabla f_z(x^*)\rVert^2,
+\sigma_{\ast}^{2}=\frac{1}{n}\sum_{z=1}^{n}\lVert\nabla f_z(x^{\ast})\rVert^{2},
 \qquad
 \delta=\min\{1,2-\eta\beta\}.
-$$
+```
 
 For a positive integer horizon $T$, define
 
-$$
+```math
 \ell_T=\log(T+2),
 \qquad
 \lambda_T=\log(2+\ell_T),
 \qquad
-P_T=\frac{\ell_T^3}{\lambda_T}.
-$$
+P_T=\frac{\ell_T^{3}}{\lambda_T}.
+```
 
 For every $0<\eta\beta<2$, the formalization proves
 
-$$
-\mathbb E\bigl[F(x_T)-F(x^*)\bigr]
+```math
+\mathbb{E}\bigl[F(x_T)-F(x^{\ast})\bigr]
 \le 280000\,P_T
 \left(
-\frac{R^2}{\delta^3\eta T}
-+\frac{\eta\sigma_*^2}{\delta^4}
+\frac{R^{2}}{\delta^{3}\eta T}
++\frac{\eta\sigma_{\ast}^{2}}{\delta^{4}}
 \right).
-$$
+```
 
 The sampling laws and permitted horizons are:
 
@@ -61,13 +61,13 @@ The sampling laws and permitted horizons are:
 | WR | Independent uniform labels from the population | Every $T\ge 1$ |
 | WOR | A uniform ordered sample of distinct labels, equivalently a prefix of a uniform permutation | Every $1\le T\le n$, including $T=n$ |
 
-In the interpolation regime, $\sigma_*^2=0$. At the greedy step $\eta=1/\beta$, the bound becomes
+In the interpolation regime, $\sigma_{\ast}^{2}=0$. At the greedy step $\eta=1/\beta$, the bound becomes
 
-$$
-\mathbb E\bigl[F(x_T)-F(x^*)\bigr]
-\le 280000\,\beta R^2\frac{P_T}{T}
-=O\!\left(\frac{\beta R^2\log^3 T}{T\log\log T}\right).
-$$
+```math
+\mathbb{E}\bigl[F(x_T)-F(x^{\ast})\bigr]
+\le 280000\,\beta R^{2}\frac{P_T}{T}
+=O\!\left(\frac{\beta R^{2}\log^{3} T}{T\log\log T}\right).
+```
 
 The constant is conservative and has not been optimized. Both sampling rules satisfy the
 same upper bound; the theorem does not order their losses on individual problems.
@@ -148,6 +148,12 @@ automatic precompiled-cache download; no `lake exe cache get` command is require
 Lake's local artifact cache is enabled in [lakefile.toml](lakefile.toml). Keeping
 `LAKE_CACHE_DIR` at a persistent location lets compatible builds reuse locally available
 artifacts. Generated files remain under `.lake/` and the selected cache directory.
+
+The [GitHub Actions workflow](.github/workflows/lean.yml) runs on pushes to `main`, pull
+requests, and manual dispatch. It builds with the pinned toolchain, audits the proof library
+and submission declarations for nonstandard axioms, and runs sandboxed Comparator with Lean
+and NanoDa. CI compiles missing dependencies from source and caches `.lake/` between runs;
+Mathlib's precompiled-cache download is disabled.
 
 ## Comparator and verification
 
