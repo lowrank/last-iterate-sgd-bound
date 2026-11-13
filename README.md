@@ -162,7 +162,10 @@ The [GitHub Actions workflow](.github/workflows/lean.yml) runs on pushes to `mai
 requests, and manual dispatch. It builds with the pinned toolchain, audits the proof library
 and submission declarations for nonstandard axioms, and runs sandboxed Comparator with Lean
 and NanoDa. CI compiles missing dependencies from source and caches `.lake/` between runs;
-Mathlib's precompiled-cache download is disabled.
+Mathlib's precompiled-cache download is disabled. Pushes queue behind the running build so
+that it can finish and save its cache. Completed targets from failed or interrupted builds
+are also saved for reuse. Shared artifact-cache writes are enabled only in the CI build step,
+where dependency checkouts are writable; the package defaults remain compatible with Palomar.
 
 ## Comparator and verification
 
