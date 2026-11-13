@@ -145,8 +145,17 @@ This builds the proof library, Challenge, and Solution. Missing dependencies are
 their pinned revisions and compiled as needed. The environment variable disables Mathlib's
 automatic precompiled-cache download; no `lake exe cache get` command is required.
 
-Lake's local artifact cache is enabled in [lakefile.toml](lakefile.toml). Keeping
-`LAKE_CACHE_DIR` at a persistent location lets compatible builds reuse locally available
+The package leaves Lake's artifact-cache settings at their defaults so that verification
+can use read-only dependency builds. For local development with writable dependencies,
+enable the shared cache explicitly:
+
+```sh
+export LAKE_ARTIFACT_CACHE=true
+export LAKE_RESTORE_ARTIFACTS=true
+lake build
+```
+
+Keeping `LAKE_CACHE_DIR` at a persistent location lets compatible local builds share
 artifacts. Generated files remain under `.lake/` and the selected cache directory.
 
 The [GitHub Actions workflow](.github/workflows/lean.yml) runs on pushes to `main`, pull

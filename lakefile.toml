@@ -1,8 +1,6 @@
 name = "SGDLastIterate"
 version = "0.1.0"
 defaultTargets = ["LastIterate", "Challenge", "Solution"]
-enableArtifactCache = true
-restoreAllArtifacts = true
 
 [[require]]
 name = "mathlib"
